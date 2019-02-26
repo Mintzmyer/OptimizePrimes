@@ -66,11 +66,18 @@ $primes | ForEach-Object {
   dPrint("$_")
   $currDec = [math]::floor($_/10)          # Get the row number by the 10's
   if ($prevDec -lt $currDec) {             # Check if we are on a new row of 10's
-    dPrint("$_ $prevDec $currDec")
+    dPrint("$_ sets row from $prevDec to $currDec")
+    $jump = ($currDec-$prevDec);           # Track how many lines are skipped
     $prevDec = $currDec
     $tab = 0;                              # Reset the default starting position
     $cursor = 0;                           # Reset the cursor location
     echo $currLine >> $fileName            # Write previously formed row to the output file
+
+    dPrint("Jumping $jump line(s)")
+    for ($i = 1; $i -lt $jump; $i++) { # Add space for skipped row with no primes
+        echo "" >> $fileName
+    }
+
     $currLine = ""
   }
 
@@ -91,7 +98,7 @@ $primes | ForEach-Object {
   while ($cursor -lt $tab) {
     $currLine += "`t"
     $cursor += 1;
-    dPrint("$_ $cursor $tab")
+    dPrint("$_ skips col from $cursor to $tab")
   }
 
   # Append the prime to the next line being formed
