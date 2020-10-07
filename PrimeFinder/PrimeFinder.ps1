@@ -48,7 +48,6 @@ while (1) {
 
   # If we found a prime, add it to the file
   if ($isPrime) {
-    echo ("Found " + $Current)
     $Current.ToString() | Out-File "$PRIMESFILE" -Append -Encoding "UTF8"
     $Current.ToString() | Out-File "$STARTFILE" -Encoding "UTF8"
     $Primes+=$Current
