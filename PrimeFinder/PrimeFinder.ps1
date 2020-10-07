@@ -32,15 +32,16 @@ if (Test-Path "$STARTFILE") {
 [int]$Current=$LastSave
 echo ("Starting at: " + $Current)
 
-$FoundPrimesSinceSave=0
+$NewPrimes=0
 $stopwatch =  [system.diagnostics.stopwatch]::StartNew()
 
 # Begin the hunt!!!
 while (1) {
   $isPrime=1
+  #$maxFactor = [math]::Round([math]::Sqrt($Current+1), 0)
   foreach ($prime in $Primes) {
     #echo ("Current: " + $Current + " | i: " + $prime)
-    if (-Not ( $Current % $prime )) {
+    if ((-Not ( $Current % $prime ))) { # -OR ( $prime -gt $maxFactor)) {
       $isPrime=0;
       continue
     }
@@ -51,18 +52,20 @@ while (1) {
     $Current.ToString() | Out-File "$PRIMESFILE" -Append -Encoding "UTF8"
     $Current.ToString() | Out-File "$STARTFILE" -Encoding "UTF8"
     $Primes+=$Current
-    $FoundPrimesSinceSave=1
+    $NewPrimes++
   }
 
   # Add a save point every 1000 seconds (~16.66 minutes)
-  if ([math]::Round($stopwatch.Elapsed.TotalSeconds,0) -gt 1000) {
+  $SaveFreq = 1000
+  if ([math]::Round($stopwatch.Elapsed.TotalSeconds,0) -gt $SaveFreq) {
 
     $Current.ToString() | Out-File "$STARTFILE" -Encoding "UTF8"
 
     $CommitMsg = "At $Current, nothing in the last 1000 seconds"
-    if ( $FoundPrimesSinceSave ) {
-      $CommitMsg = ("Found primes up to " + $Primes[-1])
-      $FoundPrimesSinceSave=0
+    if ( $NewPrimes -gt 0 ) {
+      $rate = [math]::Round(($SaveFreq / $NewPrimes), 1)
+      $CommitMsg = ("Found primes up to " + $Primes[-1] + " averaging " + $rate + "sec/prime")
+      $NewPrimes=0
     }
 
     git commit -am "$CommitMsg"
