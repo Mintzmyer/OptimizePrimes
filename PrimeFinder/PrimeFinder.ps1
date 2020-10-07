@@ -57,8 +57,8 @@ while (1) {
 
   # Well, maybe bundle it in batches before we push to the repo
   if ( $RecentPrimes.length -gt 10 ) {
-    git commit -am ("Found more primes: " + $RecentPrimes -join ' ')
-    #git push
+    git commit -am ("Found primes up to " + $RecentPrimes[-1])
+    git push
     $RecentPrimes=@()
     $LastSave=$Current
     $stopwatch.Restart()
@@ -69,8 +69,8 @@ while (1) {
 
     $Current.ToString() | Out-File "$STARTFILE" -Encoding "UTF8"
 
-    #git commit -am "At $Current, nothing in the last 1000"
-    #git push
+    git commit -am "At $Current, nothing in the last 1000"
+    git push
     $LastSave=$Current
     $stopwatch.Restart()
   }
