@@ -12,7 +12,6 @@ git fetch
 git pull
 
 $Primes = @()
-$RecentPrimes = @()
 $LastSave=2
 
 $PRIMESFILE="./CurrentPrimes.txt"
@@ -33,6 +32,7 @@ if (Test-Path "$STARTFILE") {
 [int]$Current=$LastSave
 echo ("Starting at: " + $Current)
 
+$FoundPrimesSinceSave=0
 $stopwatch =  [system.diagnostics.stopwatch]::StartNew()
 
 # Begin the hunt!!!
@@ -51,16 +51,7 @@ while (1) {
     $Current.ToString() | Out-File "$PRIMESFILE" -Append -Encoding "UTF8"
     $Current.ToString() | Out-File "$STARTFILE" -Encoding "UTF8"
     $Primes+=$Current
-    $RecentPrimes+=$Current
-  }
-
-  # Well, maybe bundle it in batches before we push to the repo
-  if ( $RecentPrimes.length -gt 10 ) {
-    git commit -am ("Found primes up to " + $RecentPrimes[-1])
-    git push
-    $RecentPrimes=@()
-    $LastSave=$Current
-    $stopwatch.Restart()
+    $FoundPrimesSinceSave=1
   }
 
   # Add a save point every 1000 seconds (~16.66 minutes)
@@ -68,7 +59,13 @@ while (1) {
 
     $Current.ToString() | Out-File "$STARTFILE" -Encoding "UTF8"
 
-    git commit -am "At $Current, nothing in the last 1000"
+    $CommitMsg = "At $Current, nothing in the last 1000 seconds"
+    if ( $FoundPrimesSinceSave ) {
+      $CommitMsg = ("Found primes up to " + $Primes[-1])
+      $FoundPrimesSinceSave=0
+    }
+
+    git commit -am "$CommitMsg"
     git push
     $LastSave=$Current
     $stopwatch.Restart()
