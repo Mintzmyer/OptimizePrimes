@@ -14,7 +14,7 @@ Primes=()
 LastSave=2
 
 PRIMESFILE="./CurrentPrimes.txt"
-STARTFILE="./CurrentStart.txt"
+STARTFILE="./LastSave.txt"
 
 # Get list of found primes
 if test -f "$PRIMESFILE"; then
@@ -24,7 +24,7 @@ if test -f "$PRIMESFILE"; then
   done < "$PRIMESFILE"
 fi
 
-echo "Current primes are: ${Primes[*]}"
+echo "Loaded ${#Primes} primes"
 
 # Get bookmarked number to start at
 if test -f "$STARTFILE"; then
@@ -50,6 +50,7 @@ do
     fi
   done
 
+  # If we found a prime, add it to the file and send it to the repo!
   if $isPrime; then
     echo "$Current" >> "$PRIMESFILE"
     echo "$Current" > "$STARTFILE"
@@ -59,7 +60,8 @@ do
     LastSave=$Current
   fi
 
-  if (( $Current - $LastSave > 1000 )); then
+  # Add a save point every 100k checked numbers
+  if (( $Current - $LastSave > 100000 )); then
     echo "$Current" > "$STARTFILE"
 
     # git commit -am "At $Current, nothing in the last 1000"
