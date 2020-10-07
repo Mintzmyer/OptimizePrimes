@@ -33,6 +33,8 @@ if (Test-Path "$STARTFILE") {
 [int]$Current=$LastSave
 echo ("Starting at: " + $Current)
 
+$stopwatch =  [system.diagnostics.stopwatch]::StartNew()
+
 # Begin the hunt!!!
 while (1) {
   $isPrime=1
@@ -53,21 +55,24 @@ while (1) {
     $RecentPrimes+=$Current
   }
 
-  # Well, maybe bundle it in batches of 5 before we push to the repo
-  if ( $RecentPrimes.length > 5 ) {
-    #git commit -am "Found more primes: ${RecentPrimes[*]}"
+  # Well, maybe bundle it in batches before we push to the repo
+  if ( $RecentPrimes.length -gt 10 ) {
+    git commit -am ("Found more primes: " + $RecentPrimes -join ' ')
     #git push
     $RecentPrimes=@()
     $LastSave=$Current
+    $stopwatch.Restart()
   }
 
-  # Add a save point every 1000 checked numbers
-  if ( $Current - $LastSave > 1000 ) {
+  # Add a save point every 1000 seconds (~16.66 minutes)
+  if ([math]::Round($stopwatch.Elapsed.TotalSeconds,0) -gt 1000) {
+
     $Current.ToString() | Out-File "$STARTFILE" -Encoding "UTF8"
 
     #git commit -am "At $Current, nothing in the last 1000"
     #git push
     $LastSave=$Current
+    $stopwatch.Restart()
   }
 
   $Current++
