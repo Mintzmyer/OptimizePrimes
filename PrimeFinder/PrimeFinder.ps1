@@ -64,7 +64,7 @@ while (1) {
 
     $CommitMsg = "At $Current, nothing in the last 1000 seconds"
     if ( $NewPrimes -gt 0 ) {
-      $rate = [math]::Round(($SaveFreq / $NewPrimes), 1)
+      $rate = [math]::Round(($SaveFreq / $NewPrimes), 3)
       $CommitMsg = ("Found primes up to " + $Primes[-1] + " averaging " + $rate + "sec/prime")
       $NewPrimes=0
     }
