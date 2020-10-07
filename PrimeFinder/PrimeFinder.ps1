@@ -34,16 +34,18 @@ echo ("Starting at: " + $Current)
 
 $NewPrimes=0
 $stopwatch =  [system.diagnostics.stopwatch]::StartNew()
+$SaveFreq = 1000
 
 # Begin the hunt!!!
 while (1) {
   $isPrime=1
-  #$maxFactor = [math]::Round([math]::Sqrt($Current+1), 0)
+  [int]$maxFactor = [math]::Round([math]::Sqrt($Current+1), 0)
   foreach ($prime in $Primes) {
-    #echo ("Current: " + $Current + " | i: " + $prime)
-    if ((-Not ( $Current % $prime ))) { # -OR ( $prime -gt $maxFactor)) {
+    if (-Not ( $Current % $prime )) {
       $isPrime=0;
-      continue
+      break
+    } elseif ( $maxFactor -lt $prime ) {
+      break
     }
   }
 
@@ -56,7 +58,6 @@ while (1) {
   }
 
   # Add a save point every 1000 seconds (~16.66 minutes)
-  $SaveFreq = 1000
   if ([math]::Round($stopwatch.Elapsed.TotalSeconds,0) -gt $SaveFreq) {
 
     $Current.ToString() | Out-File "$STARTFILE" -Encoding "UTF8"
