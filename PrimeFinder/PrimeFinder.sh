@@ -11,6 +11,7 @@ git fetch
 git pull
 
 Primes=()
+RecentPrimes=()
 LastSave=2
 
 PRIMESFILE="./CurrentPrimes.txt"
@@ -18,13 +19,11 @@ STARTFILE="./LastSave.txt"
 
 # Get list of found primes
 if test -f "$PRIMESFILE"; then
-  while IFS= read -r line
-  do
-    Primes+=("$line")
-  done < "$PRIMESFILE"
+  RawPrimes=`cat $PRIMESFILE`
+  Primes=($RawPrimes)
 fi
 
-echo "Loaded ${#Primes} primes"
+echo "Loaded ${#Primes[*]} primes"
 
 # Get bookmarked number to start at
 if test -f "$STARTFILE"; then
@@ -38,7 +37,7 @@ Current=$LastSave
 echo "Starting at: $Current"
 
 
-# Begin the hunt!
+# Begin the hunt!!!
 while true
 do
   isPrime=true
@@ -50,22 +49,27 @@ do
     fi
   done
 
-  # If we found a prime, add it to the file and send it to the repo!
+  # If we found a prime, add it to the file
   if $isPrime; then
     echo "$Current" >> "$PRIMESFILE"
     echo "$Current" > "$STARTFILE"
+    RecentPrimes+=($Current)
+  fi
 
-    # git commit -am "Found another prime... $Current!"
-    # git push
+  # Well, maybe bundle it in batches of 5
+  if (( ${#RecentPrimes[*]} > 5 )); then
+    git commit -am "Found more primes: ${RecentPrimes[*]}"
+    git push
+    RecentPrimes=()
     LastSave=$Current
   fi
 
-  # Add a save point every 100k checked numbers
-  if (( $Current - $LastSave > 100000 )); then
+  # Add a save point every 1000 checked numbers
+  if (( $Current - $LastSave > 1000 )); then
     echo "$Current" > "$STARTFILE"
 
-    # git commit -am "At $Current, nothing in the last 1000"
-    # git push
+    git commit -am "At $Current, nothing in the last 1000"
+    git push
     LastSave=$Current
   fi
 
