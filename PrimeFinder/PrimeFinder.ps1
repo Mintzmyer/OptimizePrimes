@@ -19,6 +19,7 @@ $STARTFILE="./LastSave.txt"
 
 # Get list of found primes
 if (Test-Path "$PRIMESFILE") {
+  # Watch out, this loads the primes as strings so be mindful of future operations
   $Primes= Get-Content $PRIMESFILE
 }
 
@@ -39,7 +40,11 @@ $SaveFreq = 1000
 # Begin the hunt!!!
 while (1) {
   $isPrime=1
+
+  # Only need to check the first sqrt(n) factors, larger factors must have
+  #     a complimentary smaller factor to pair with
   [int]$maxFactor = [math]::Round([math]::Sqrt($Current+1), 0)
+
   foreach ($prime in $Primes) {
     if (-Not ( $Current % $prime )) {
       $isPrime=0;
@@ -51,15 +56,18 @@ while (1) {
 
   # If we found a prime, add it to the file
   if ($isPrime) {
+    # Save prime to file, and save checkpoint to avoid duplicating found primes
     $Current.ToString() | Out-File "$PRIMESFILE" -Append -Encoding "UTF8"
     $Current.ToString() | Out-File "$STARTFILE" -Encoding "UTF8"
+    # Add new prime to our list of primes to check future numbers against
     $Primes+=$Current
     $NewPrimes++
   }
 
-  # Add a save point every 1000 seconds (~16.66 minutes)
+  # Add a save point every 1000 seconds (~16.66 minutes) and commit progress
   if ([math]::Round($stopwatch.Elapsed.TotalSeconds,0) -gt $SaveFreq) {
 
+    # Save progress point to file
     $Current.ToString() | Out-File "$STARTFILE" -Encoding "UTF8"
 
     $CommitMsg = "At $Current, nothing in the last 1000 seconds"
