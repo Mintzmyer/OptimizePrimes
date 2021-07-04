@@ -50,9 +50,9 @@ class Knight:
 		while (self.queue):
 			location = self.pop()
 			#print(location)
-			#location = queue[0]
 			#print("(" + str(location[x]) + ", " + str(location[y]) + ") =>" + str(location[jumps]))
-			#queue.remove(queue[0])
+
+			# If a jump number isn't supplied, assume it's the first jump/starting position
 			if (len(location) == 2):
 				location = (location[x], location[y], 1)
 
