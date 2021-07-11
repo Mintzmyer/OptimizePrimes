@@ -1,6 +1,7 @@
-#include <sstream>
+#include <string>
 #include <iostream>
 #include <queue>
+#include "DrawBoard.h"
 
 const int MAX_START_POS = 8;
 
@@ -43,15 +44,15 @@ class Knight {
     std::queue<XYJ> moveQueue;
 
     Knight(int width = 8, int height = 8, int ** startingPositions = NULL) {
-        std::cout << "Making Knight" << std::endl;
         board = Board(width, height);
         if (startingPositions == NULL || startingPositions[0][0] == -1) {
-            std::cout << "Making Knight: default starting positions" << std::endl;
             moveQueue.push(XYJ(7, 1, 1));
             moveQueue.push(XYJ(7, 6, 1));
         } else {
-            std::cout << "Making Knight: novel starting positions" << std::endl;
             for (int i = 0; i < MAX_START_POS; i++) {
+                if (startingPositions[i][0] < 0 || startingPositions[i][1] < 0) {
+                    break;
+                }
                 moveQueue.push(XYJ(startingPositions[i][0], startingPositions[i][1], 1));
             }
         }
@@ -101,18 +102,21 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (argc == 3) {
+    if (argc >= 3) {
         board_rows = std::atoi(argv[1]);
         board_cols = std::atoi(argv[2]);
-    } else if ((argc >= 5) && (argc % 2 == 1)) {
-        for (int i = 3; i < argc; i++) {
-            starting_pos[(int)((i-3)/2)][(i-1)%2] = std::atoi(argv[i]);
+        if ((argc >= 5) && (argc % 2 == 1)) {
+            for (int i = 3; i < argc; i++) {
+                starting_pos[(int)((i-3)/2)][(i-1)%2] = std::atoi(argv[i]);
+            }
         }
     } else if (argc != 1) {
-        fprintf(stderr, "Usage: Knights [rows cols] [pos1x pos1y] [pos2x pos2y]...up to 8 starting positions\n");
+        fprintf(stderr, "Usage: Knights [rows cols] [pos1x pos1y] [pos2x pos2y]...up to %d starting positions\n", MAX_START_POS);
         exit(EXIT_FAILURE);
     }
 
     Knight standard = Knight(board_cols, board_rows, starting_pos);
     standard.knightBreadthSearch();
+
+    draw("K", 10, board_cols, board_rows, standard.board.tiles);
 }

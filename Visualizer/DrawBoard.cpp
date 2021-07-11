@@ -7,6 +7,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
+#include "DrawBoard.h"
+
 #define WINDOW_WIDTH 700
 #define WINDOW_HEIGHT (WINDOW_WIDTH)
 
@@ -38,6 +40,9 @@ void get_data_range(int cols, int rows, int **heatMap, double range[3]) {
 
     for (int i = 0; i < cols; i++) {
         for (int j = 0; j < rows; j++) {
+            if (heatMap[i][j] == -1) {
+                continue;
+            }
             if (heatMap[i][j] < range[min]) {
                 range[min] = (double)heatMap[i][j];
             }
@@ -99,7 +104,7 @@ void get_coloring(int spectrum[3][4], double point, double range[3], SDL_Color *
  * if heatMap array supplied, interpolates the colors to form heat map
  **/
 void get_board(SDL_Renderer *renderer, int margin, int cols, int rows,
-        int spectrum[3][4], TTF_Font *font, SDL_Texture **texture,
+        int spectrum[3][4], TTF_Font *font, SDL_Texture **texture, char * piece,
         int **heatMap = NULL) {
     int size = (WINDOW_WIDTH-(2*margin))/8;
     SDL_Rect rect;
@@ -121,15 +126,75 @@ void get_board(SDL_Renderer *renderer, int margin, int cols, int rows,
             SDL_SetRenderDrawColor(renderer, backColor.r, backColor.g, backColor.b, backColor.a);
             
             SDL_RenderFillRect(renderer, &rect);
+            if (heatMap[i][j] >= 0) {
+                std::sprintf(num_char, "%d", heatMap[i][j]);
+            } else {
+                num_char[0] = *piece;
+            }
             
-            std::sprintf(num_char, "%d", heatMap[i][j]);
             get_labels(renderer, num_char, font, fontColor, texture, &rect);
             SDL_RenderCopy(renderer, *texture, NULL, &rect);
         }
     }
 }
 
+int draw(char* piece, int margin, int rows, int cols, int** map) {
+    SDL_Event event;
 
+    SDL_Renderer *renderer;
+    SDL_Texture *texture;
+    SDL_Window *window;
+    char *font_path = "FreeSans.ttf";
+    int quit;
+    
+
+    /* Inint TTF. */
+    SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
+    SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_WIDTH, 0, &window, &renderer);
+    TTF_Init();
+    TTF_Font *font = TTF_OpenFont(font_path, 24);
+    if (font == NULL) {
+        fprintf(stderr, "error: font not found\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    int spectrum[3][4] = {{0, 100, 0, 0},{255, 255, 0, 0},{139, 0, 0, 0}};
+    /*
+    // Green
+    spectrum[0] = {0, 100, 0, 0};
+    // Yellow
+    spectrum[1] = {255, 255, 0, 0};
+    // Red
+    spectrum[2] = {139, 0, 0, 0};
+    */
+
+    quit = 0;
+    while (!quit) {
+        while (SDL_PollEvent(&event) == 1) {
+            if (event.type == SDL_QUIT) {
+                quit = 1;
+            }
+        }
+        
+        SDL_RenderClear(renderer);
+
+        /* Use TTF textures. */
+        get_board(renderer, margin, rows, cols, spectrum, font, &texture, piece, map);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+        SDL_RenderPresent(renderer);
+    }
+
+    /* Deinit TTF. */
+    SDL_DestroyTexture(texture);
+    TTF_Quit();
+
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    return EXIT_SUCCESS;
+}
+
+/**
 int main(int argc, char **argv) {
     SDL_Event event;
 
@@ -188,7 +253,7 @@ int main(int argc, char **argv) {
         SDL_RenderClear(renderer);
 
         /* Use TTF textures. */
-        get_board(renderer, 10, 8, 8, spectrum, font, &texture, heat);
+        get_board(renderer, 10, 8, 8, spectrum, font, &texture, "k", heat);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
         SDL_RenderPresent(renderer);
     }
@@ -202,3 +267,4 @@ int main(int argc, char **argv) {
     SDL_Quit();
     return EXIT_SUCCESS;
 }
+**/
